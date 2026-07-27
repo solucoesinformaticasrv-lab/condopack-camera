@@ -1,1 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
 
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width,initial-scale=1">
+
+<title>CondoPack Camera</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+
+    background:#0F172A;
+
+    height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+.container{
+
+    width:95%;
+
+    max-width:900px;
+
+    text-align:center;
+
+}
+
+h2{
+
+    color:white;
+
+    margin-bottom:20px;
+
+}
+
+video{
+
+    width:100%;
+
+    border-radius:12px;
+
+    background:black;
+
+}
+
+button{
+
+    margin-top:20px;
+
+    padding:14px 35px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#1E4DB7;
+
+    color:white;
+
+    font-size:18px;
+
+    cursor:pointer;
+
+}
+
+button:hover{
+
+    background:#163B8C;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>📷 CondoPack Camera</h2>
+
+<video
+    id="video"
+    autoplay
+    playsinline>
+</video>
+
+<button onclick="capturar()">
+
+📷 Capturar
+
+</button>
+
+</div>
+
+<script>
+
+let stream=null;
+
+async function iniciar(){
+
+    try{
+
+        stream =
+            await navigator.mediaDevices.getUserMedia({
+
+                video:true,
+
+                audio:false
+
+            });
+
+        document
+            .getElementById("video")
+            .srcObject = stream;
+
+    }
+
+    catch(e){
+
+        alert("No fue posible acceder a la webcam.");
+
+        console.error(e);
+
+    }
+
+}
+
+function capturar(){
+
+    const video=document.getElementById("video");
+
+    const canvas=document.createElement("canvas");
+
+    canvas.width=video.videoWidth;
+
+    canvas.height=video.videoHeight;
+
+    canvas
+      .getContext("2d")
+      .drawImage(video,0,0);
+
+    const base64=
+        canvas.toDataURL(
+            "image/jpeg",
+            0.75
+        );
+
+    if(window.opener){
+
+        window.opener.postMessage({
+
+            tipo:"CONDOPACK_CAMERA",
+
+            foto:base64
+
+        },"*");
+
+    }
+
+    stream
+      .getTracks()
+      .forEach(track=>track.stop());
+
+    window.close();
+
+}
+
+iniciar();
+
+</script>
+
+</body>
+
+</html>
