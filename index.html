@@ -1,89 +1,174 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="pt-BR">
 
 <head>
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-      content="width=device-width,initial-scale=1">
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
 
 <title>CondoPack Camera</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Inter',sans-serif;
 }
 
 body{
 
-    background:#0F172A;
+background:#EEF3FA;
 
-    height:100vh;
+display:flex;
 
-    display:flex;
+justify-content:center;
 
-    justify-content:center;
+align-items:center;
 
-    align-items:center;
-
-}
-
-.container{
-
-    width:95%;
-
-    max-width:900px;
-
-    text-align:center;
+height:100vh;
 
 }
 
-h2{
+.card{
 
-    color:white;
+width:95%;
 
-    margin-bottom:20px;
+max-width:900px;
+
+background:white;
+
+border-radius:18px;
+
+box-shadow:0 15px 40px rgba(0,0,0,.12);
+
+overflow:hidden;
+
+}
+
+.header{
+
+background:#1E4DB7;
+
+padding:20px;
+
+color:white;
+
+text-align:center;
+
+}
+
+.header h1{
+
+font-size:26px;
+
+font-weight:700;
+
+}
+
+.header p{
+
+margin-top:6px;
+
+opacity:.9;
+
+}
+
+.video-area{
+
+padding:25px;
 
 }
 
 video{
 
-    width:100%;
+width:100%;
 
-    border-radius:12px;
+border-radius:14px;
 
-    background:black;
+background:black;
+
+aspect-ratio:16/9;
+
+object-fit:cover;
+
+}
+
+.actions{
+
+display:flex;
+
+justify-content:center;
+
+gap:15px;
+
+padding:0 25px 25px;
 
 }
 
 button{
 
-    margin-top:20px;
+padding:14px 28px;
 
-    padding:14px 35px;
+border:none;
 
-    border:none;
+border-radius:10px;
 
-    border-radius:10px;
+font-size:16px;
 
-    background:#1E4DB7;
+font-weight:600;
 
-    color:white;
+cursor:pointer;
 
-    font-size:18px;
-
-    cursor:pointer;
+transition:.25s;
 
 }
 
-button:hover{
+.capture{
 
-    background:#163B8C;
+background:#1E4DB7;
+
+color:white;
+
+}
+
+.capture:hover{
+
+background:#163C92;
+
+}
+
+.cancel{
+
+background:#E5E7EB;
+
+color:#374151;
+
+}
+
+.cancel:hover{
+
+background:#D1D5DB;
+
+}
+
+.status{
+
+padding:15px;
+
+text-align:center;
+
+font-weight:600;
+
+color:#1E4DB7;
+
+display:none;
 
 }
 
@@ -93,21 +178,53 @@ button:hover{
 
 <body>
 
-<div class="container">
+<div class="card">
 
-<h2>📷 CondoPack Camera</h2>
+<div class="header">
+
+<h1>🏢 CondoPack</h1>
+
+<p>Captura de Evidência</p>
+
+</div>
+
+<div class="video-area">
 
 <video
-    id="video"
-    autoplay
-    playsinline>
+id="video"
+autoplay
+playsinline>
 </video>
 
-<button onclick="capturar()">
+</div>
+
+<div class="actions">
+
+<button
+class="capture"
+onclick="capturar()">
 
 📷 Capturar
 
 </button>
+
+<button
+class="cancel"
+onclick="cancelar()">
+
+❌ Cancelar
+
+</button>
+
+</div>
+
+<div
+id="status"
+class="status">
+
+Enviando imagem...
+
+</div>
 
 </div>
 
@@ -117,70 +234,88 @@ let stream=null;
 
 async function iniciar(){
 
-    try{
+try{
 
-        stream =
-            await navigator.mediaDevices.getUserMedia({
+stream=
+await navigator.mediaDevices.getUserMedia({
 
-                video:true,
+video:true,
 
-                audio:false
+audio:false
 
-            });
+});
 
-        document
-            .getElementById("video")
-            .srcObject = stream;
+document
+.getElementById("video")
+.srcObject=stream;
 
-    }
+}
+catch(e){
 
-    catch(e){
+alert("Não foi possível acessar a webcam.");
 
-        alert("No fue posible acceder a la webcam.");
+console.error(e);
 
-        console.error(e);
-
-    }
+}
 
 }
 
 function capturar(){
 
-    const video=document.getElementById("video");
+const video=document.getElementById("video");
 
-    const canvas=document.createElement("canvas");
+const canvas=document.createElement("canvas");
 
-    canvas.width=video.videoWidth;
+canvas.width=video.videoWidth;
 
-    canvas.height=video.videoHeight;
+canvas.height=video.videoHeight;
 
-    canvas
-      .getContext("2d")
-      .drawImage(video,0,0);
+canvas
+.getContext("2d")
+.drawImage(video,0,0);
 
-    const base64=
-        canvas.toDataURL(
-            "image/jpeg",
-            0.75
-        );
+const base64=
+canvas.toDataURL("image/jpeg",0.75);
 
-    if(window.opener){
+document
+.getElementById("status")
+.style.display="block";
 
-        window.opener.postMessage({
+if(window.opener){
 
-            tipo:"CONDOPACK_CAMERA",
+window.opener.postMessage({
 
-            foto:base64
+tipo:"CONDOPACK_CAMERA",
 
-        },"*");
+foto:base64
 
-    }
+},"https://script.google.com");
 
-    stream
-      .getTracks()
-      .forEach(track=>track.stop());
+}
 
-    window.close();
+stream
+.getTracks()
+.forEach(track=>track.stop());
+
+setTimeout(()=>{
+
+window.close();
+
+},600);
+
+}
+
+function cancelar(){
+
+if(stream){
+
+stream
+.getTracks()
+.forEach(track=>track.stop());
+
+}
+
+window.close();
 
 }
 
