@@ -184,8 +184,6 @@ display:none;
 
 <h1>🏢 CondoPack</h1>
 
-<p>Captura de Evidência</p>
-
 </div>
 
 <div class="video-area">
@@ -283,6 +281,9 @@ document
 
 if(window.opener){
 
+  console.log("Enviando foto...");
+
+console.log(base64.substring(0,50));
 window.opener.postMessage({
 
 tipo:"CONDOPACK_CAMERA",
