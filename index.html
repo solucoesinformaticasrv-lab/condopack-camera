@@ -258,58 +258,61 @@ console.error(e);
 
 }
 
-function capturar(){
+async function capturar(){
 
-const video=document.getElementById("video");
+    const video = document.getElementById("video");
 
-const canvas=document.createElement("canvas");
+    const canvas = document.createElement("canvas");
 
-canvas.width=video.videoWidth;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
 
-canvas.height=video.videoHeight;
+    canvas
+        .getContext("2d")
+        .drawImage(video, 0, 0);
 
-canvas
-.getContext("2d")
-.drawImage(video,0,0);
+    const base64 = canvas.toDataURL("image/jpeg", 0.75);
 
-const base64=
-canvas.toDataURL("image/jpeg",0.75);
+    document.getElementById("status").style.display = "block";
 
-document
-.getElementById("status")
-.style.display="block";
+    const params = new URLSearchParams(window.location.search);
 
-if(window.opener){
+    const ticket = params.get("ticket");
 
-    console.log("OPENER EXISTE");
+    try{
 
-    console.log(window.opener);
+        const resposta = await fetch(
+            "https://script.google.com/macros/s/AKfycbzX_8RF4Arrnjvc2J-kDUlKPd_UOua9QNrR3UbalvLNZO3Bwh0zmRO3q0Z6mvu1cz34Bw/exec",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    tipo: "CONDOPACK_CAMERA",
+                    ticket: ticket,
+                    foto: base64
+                })
+            }
+        );
 
-    alert("OPENER OK");
+        const resultado = await resposta.json();
 
-    window.opener.postMessage({
+        console.log(resultado);
 
-        tipo:"CONDOPACK_CAMERA",
+        // Detener la cámara
+        stream.getTracks().forEach(track => track.stop());
 
-        foto:base64
+        // Cerrar el popup
+        window.close();
 
-    },"*");
+    }catch(erro){
 
-}else{
+        console.error(erro);
 
-    alert("NO HAY OPENER");
+        alert("Erro ao enviar a foto.");
 
-}
-
-stream
-.getTracks()
-.forEach(track=>track.stop());
-
-setTimeout(()=>{
-
-window.close();
-
-},600);
+    }
 
 }
 
