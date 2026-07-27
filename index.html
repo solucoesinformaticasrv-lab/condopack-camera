@@ -279,6 +279,7 @@ async function capturar(){
 
     const ticket = params.get("ticket");
 
+    const idEncomenda = params.get("idEncomenda");
     try{
 
         const resposta = await fetch(
@@ -291,6 +292,7 @@ async function capturar(){
                 body: JSON.stringify({
                     tipo: "CONDOPACK_CAMERA",
                     ticket: ticket,
+                    idEncomenda: idEncomenda,
                     foto: base64
                 })
             }
