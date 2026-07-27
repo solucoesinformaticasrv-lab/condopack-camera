@@ -281,16 +281,23 @@ document
 
 if(window.opener){
 
-  console.log("Enviando foto...");
+    console.log("OPENER EXISTE");
 
-console.log(base64.substring(0,50));
-window.opener.postMessage({
+    console.log(window.opener);
 
-tipo:"CONDOPACK_CAMERA",
+    alert("OPENER OK");
 
-foto:base64
+    window.opener.postMessage({
 
-},"https://script.google.com");
+        tipo:"CONDOPACK_CAMERA",
+
+        foto:base64
+
+    },"*");
+
+}else{
+
+    alert("NO HAY OPENER");
 
 }
 
