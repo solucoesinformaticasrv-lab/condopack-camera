@@ -186,156 +186,91 @@ display:none;
 
 </div>
 
-<div class="video-area">
+<video id="cameraVideo" autoplay playsinline></video>
+    <button id="btnCapturar" onclick="tirarFoto()">📷 Capturar Foto</button>
+    <div id="status"></div>
 
-<video
-id="video"
-autoplay
-playsinline>
-</video>
+    <script>
+        // 1. PEGA AQUÍ LA URL DE TU SCRIPT DE GOOGLE (La que termina en /exec)
+        const URL_GAS = "https://script.google.com/macros/s/TU_CODIGO_AQUI/exec";
 
-</div>
+        let cameraStream = null;
+        
+        // 2. Extraer parámetros de la URL (Enviados por tu sistema principal)
+        const params = new URLSearchParams(window.location.search);
+        const idEncomenda = params.get('id');
+        const morador = params.get('morador');
 
-<div class="actions">
+        if(morador) {
+            document.getElementById('titulo').innerText = "Entrega para: " + morador;
+        }
 
-<button
-class="capture"
-onclick="capturar()">
-
-📷 Capturar
-
-</button>
-
-<button
-class="cancel"
-onclick="cancelar()">
-
-❌ Cancelar
-
-</button>
-
-</div>
-
-<div
-id="status"
-class="status">
-
-Enviando imagem...
-
-</div>
-
-</div>
-
-<script>
-
-let stream=null;
-
-async function iniciar(){
-
-try{
-
-stream=
-await navigator.mediaDevices.getUserMedia({
-
-video:true,
-
-audio:false
-
-});
-
-document
-.getElementById("video")
-.srcObject=stream;
-
-}
-catch(e){
-
-alert("Não foi possível acessar a webcam.");
-
-console.error(e);
-
-}
-
-}
-
-async function capturar(){
-
-    const video = document.getElementById("video");
-
-    const canvas = document.createElement("canvas");
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    canvas
-        .getContext("2d")
-        .drawImage(video, 0, 0);
-
-    const base64 = canvas.toDataURL("image/jpeg", 0.75);
-
-    document.getElementById("status").style.display = "block";
-
-    const params = new URLSearchParams(window.location.search);
-
-    const ticket = params.get("ticket");
-
-    const idEncomenda = params.get("idEncomenda");
-    try{
-
-        const resposta = await fetch(
-            "https://script.google.com/macros/s/AKfycbzX_8RF4Arrnjvc2J-kDUlKPd_UOua9QNrR3UbalvLNZO3Bwh0zmRO3q0Z6mvu1cz34Bw/exec",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    tipo: "CONDOPACK_CAMERA",
-                    ticket: ticket,
-                    idEncomenda: idEncomenda,
-                    foto: base64
-                })
+        // 3. Iniciar Cámara de la PC
+        async function iniciarCamera() {
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                document.getElementById('cameraVideo').srcObject = cameraStream;
+            } catch (error) {
+                document.getElementById('status').innerText = "Erro ao acessar a câmera. Verifique as permissões.";
+                document.getElementById('btnCapturar').disabled = true;
             }
-        );
+        }
 
-        const resultado = await resposta.json();
+        // 4. Tomar foto, comprimir y enviar a Google Apps Script
+        async function tirarFoto() {
+            const video = document.getElementById("cameraVideo");
+            const btn = document.getElementById('btnCapturar');
+            const status = document.getElementById('status');
 
-        console.log(resultado);
+            btn.disabled = true;
+            btn.innerText = "Enviando...";
+            status.innerText = "Comprimindo imagem...";
 
-        // Detener la cámara
-        stream.getTracks().forEach(track => track.stop());
+            // Dibujar en canvas
+            const canvas = document.createElement("canvas");
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext("2d").drawImage(video, 0, 0);
 
-        // Cerrar el popup
-        window.close();
+            // Comprimir a Base64
+            const base64Comprimido = canvas.toDataURL("image/jpeg", 0.6);
 
-    }catch(erro){
+            status.innerText = "Enviando para o sistema...";
 
-        console.error(erro);
+            // Enviar vía POST a Google Apps Script
+            try {
+                const resposta = await fetch(URL_GAS, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        acao: "uploadFotoPC",
+                        idEncomenda: idEncomenda,
+                        foto: base64Comprimido
+                    })
+                });
 
-        alert("Erro ao enviar a foto.");
+                const resultado = await resposta.json();
 
-    }
+                if(resultado.success) {
+                    status.style.color = "#4CAF50";
+                    status.innerText = "Foto enviada! Pode fechar esta janela.";
+                    // Apagar cámara
+                    cameraStream.getTracks().forEach(track => track.stop());
+                    
+                    // Cerrar ventana automáticamente después de 2 segundos
+                    setTimeout(() => window.close(), 2000);
+                } else {
+                    throw new Error(resultado.error);
+                }
+            } catch (erro) {
+                status.style.color = "#ff4444";
+                status.innerText = "Erro ao enviar: " + erro.message;
+                btn.disabled = false;
+                btn.innerText = "📷 Tentar Novamente";
+            }
+        }
 
-}
-
-function cancelar(){
-
-if(stream){
-
-stream
-.getTracks()
-.forEach(track=>track.stop());
-
-}
-
-window.close();
-
-}
-
-iniciar();
-
-</script>
-
+        // Arrancar cámara al cargar la página
+        window.onload = iniciarCamera;
+    </script>
 </body>
-
 </html>
