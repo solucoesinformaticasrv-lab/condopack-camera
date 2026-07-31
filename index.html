@@ -182,7 +182,7 @@ display:none;
 
 <div class="header">
 
-<h1>🏢 CondoPack4</h1>
+<h1>🏢 CondoPack66</h1>
 
 </div>
 
@@ -190,8 +190,9 @@ display:none;
     <button id="btnCapturar" onclick="tirarFoto()">📷 Capturar Foto</button>
     <div id="status"></div>
 
-    <script>
-        const video = document.getElementById("cameraVideo");
+<script>
+
+const video = document.getElementById("cameraVideo");
 const status = document.getElementById("status");
 
 const params = new URLSearchParams(window.location.search);
@@ -199,9 +200,24 @@ const params = new URLSearchParams(window.location.search);
 const ticket = params.get("ticket");
 const idEncomenda = params.get("idEncomenda");
 
-// URL de tu Apps Script
-const URL_WEBAPP = "https://script.google.com/macros/s/AKfycbzX_8RF4Arrnjvc2J-kDUlKPd_UOua9QNrR3UbalvLNZO3Bwh0zmRO3q0Z6mvu1cz34Bw/exec";
-    async function iniciarCamera(){
+// URL de tu WebApp
+const URL_WEBAPP =
+"https://script.google.com/macros/s/AKfycbzX_8RF4Arrnjvc2J-kDUlKPd_UOua9QNrR3UbalvLNZO3Bwh0zmRO3q0Z6mvu1cz34Bw/exec";
+
+// Validación
+if(!ticket || !idEncomenda){
+
+    alert("Parâmetros inválidos.");
+
+    throw new Error("Ticket ou idEncomenda ausente.");
+
+}
+
+//======================================================
+// INICIAR CÂMERA
+//======================================================
+
+async function iniciarCamera(){
 
     try{
 
@@ -219,16 +235,22 @@ const URL_WEBAPP = "https://script.google.com/macros/s/AKfycbzX_8RF4Arrnjvc2J-kD
 
     }catch(e){
 
-        alert("No fue posible acceder a la cámara.");
-
         console.error(e);
+
+        alert("Não foi possível acessar a câmera.");
 
     }
 
 }
 
 iniciarCamera();
-    async function tirarFoto(){
+
+
+//======================================================
+// CAPTURAR FOTO
+//======================================================
+
+async function tirarFoto(){
 
     const canvas = document.createElement("canvas");
 
@@ -241,13 +263,24 @@ iniciarCamera();
 
     const foto = canvas.toDataURL("image/jpeg",0.8);
 
-    enviarFoto(foto);
+    await enviarFoto(foto);
 
 }
+
+
+//======================================================
+// ENVIAR FOTO
+//======================================================
+
 async function enviarFoto(foto){
 
     status.style.display = "block";
+
     status.innerHTML = "Enviando foto...";
+
+    console.log("Ticket:",ticket);
+
+    console.log("Encomenda:",idEncomenda);
 
     try{
 
@@ -256,7 +289,9 @@ async function enviarFoto(foto){
             method:"POST",
 
             headers:{
+
                 "Content-Type":"application/json"
+
             },
 
             body:JSON.stringify({
@@ -273,15 +308,26 @@ async function enviarFoto(foto){
 
         const texto = await resposta.text();
 
-        if(texto=="OK"){
+        console.log("Resposta:",texto);
 
-            status.innerHTML="Foto enviada.";
+        if(texto.trim()=="OK"){
+
+            status.innerHTML="Foto enviada com sucesso.";
+
+            // Fecha la cámara
+            if(video.srcObject){
+
+                video.srcObject
+                    .getTracks()
+                    .forEach(track=>track.stop());
+
+            }
 
             setTimeout(()=>{
 
                 window.close();
 
-            },1000);
+            },500);
 
         }else{
 
@@ -293,12 +339,12 @@ async function enviarFoto(foto){
 
         console.error(e);
 
-        status.innerHTML="Erro ao enviar.";
+        status.innerHTML="Erro ao enviar a foto.";
 
     }
 
 }
-        
-    </script>
+
+</script>
 </body>
 </html>
