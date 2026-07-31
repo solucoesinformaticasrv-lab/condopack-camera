@@ -182,7 +182,7 @@ display:none;
 
 <div class="header">
 
-<h1>🏢 CondoPack3</h1>
+<h1>🏢 CondoPack4</h1>
 
 </div>
 
@@ -200,7 +200,7 @@ const ticket = params.get("ticket");
 const idEncomenda = params.get("idEncomenda");
 
 // URL de tu Apps Script
-const URL_WEBAPP = "AQUI_VA_LA_URL_DE_TU_WEBAPP";
+const URL_WEBAPP = "https://script.google.com/macros/s/AKfycbzX_8RF4Arrnjvc2J-kDUlKPd_UOua9QNrR3UbalvLNZO3Bwh0zmRO3q0Z6mvu1cz34Bw/exec";
     async function iniciarCamera(){
 
     try{
@@ -228,8 +228,77 @@ const URL_WEBAPP = "AQUI_VA_LA_URL_DE_TU_WEBAPP";
 }
 
 iniciarCamera();
-    
-    
+    async function tirarFoto(){
+
+    const canvas = document.createElement("canvas");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+
+    ctx.drawImage(video,0,0);
+
+    const foto = canvas.toDataURL("image/jpeg",0.8);
+
+    enviarFoto(foto);
+
+}
+async function enviarFoto(foto){
+
+    status.style.display = "block";
+    status.innerHTML = "Enviando foto...";
+
+    try{
+
+        const resposta = await fetch(URL_WEBAPP,{
+
+            method:"POST",
+
+            headers:{
+                "Content-Type":"application/json"
+            },
+
+            body:JSON.stringify({
+
+                ticket:ticket,
+
+                idEncomenda:idEncomenda,
+
+                foto:foto
+
+            })
+
+        });
+
+        const texto = await resposta.text();
+
+        if(texto=="OK"){
+
+            status.innerHTML="Foto enviada.";
+
+            setTimeout(()=>{
+
+                window.close();
+
+            },1000);
+
+        }else{
+
+            status.innerHTML=texto;
+
+        }
+
+    }catch(e){
+
+        console.error(e);
+
+        status.innerHTML="Erro ao enviar.";
+
+    }
+
+}
+        
     </script>
 </body>
 </html>
