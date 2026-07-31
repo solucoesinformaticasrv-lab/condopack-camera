@@ -182,7 +182,7 @@ display:none;
 
 <div class="header">
 
-<h1>🏢 CondoPack66</h1>
+<h1>🏢 CondoPack222</h1>
 
 </div>
 
@@ -275,76 +275,41 @@ async function tirarFoto(){
 async function enviarFoto(foto){
 
     status.style.display = "block";
-
     status.innerHTML = "Enviando foto...";
 
-    console.log("Ticket:",ticket);
+    const form = document.createElement("form");
 
-    console.log("Encomenda:",idEncomenda);
+    form.method = "POST";
 
-    try{
+    form.action = URL_WEBAPP;
 
-        const resposta = await fetch(URL_WEBAPP,{
+    form.target = "_self";
 
-            method:"POST",
+    function addCampo(nome,valor){
 
-            headers:{
+        const input = document.createElement("input");
 
-                "Content-Type":"application/json"
+        input.type = "hidden";
 
-            },
+        input.name = nome;
 
-            body:JSON.stringify({
+        input.value = valor;
 
-                ticket:ticket,
-
-                idEncomenda:idEncomenda,
-
-                foto:foto
-
-            })
-
-        });
-
-        const texto = await resposta.text();
-
-        console.log("Resposta:",texto);
-
-        if(texto.trim()=="OK"){
-
-            status.innerHTML="Foto enviada com sucesso.";
-
-            // Fecha la cámara
-            if(video.srcObject){
-
-                video.srcObject
-                    .getTracks()
-                    .forEach(track=>track.stop());
-
-            }
-
-            setTimeout(()=>{
-
-                window.close();
-
-            },500);
-
-        }else{
-
-            status.innerHTML=texto;
-
-        }
-
-    }catch(e){
-
-        console.error(e);
-
-        status.innerHTML="Erro ao enviar a foto.";
+        form.appendChild(input);
 
     }
 
-}
+    addCampo("ticket",ticket);
 
+    addCampo("idEncomenda",idEncomenda);
+
+    addCampo("foto",foto);
+
+    document.body.appendChild(form);
+
+    form.submit();
+
+}
 </script>
 </body>
 </html>
