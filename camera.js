@@ -69,9 +69,9 @@
     if (stream) stream.getTracks().forEach(function (t) { t.stop(); });
   }
 
-  // Captura o quadro atual do vídeo como data URL JPEG.
+  // Copia o quadro atual do vídeo para um canvas.
   // maxLado: limita o maior lado (0 = tamanho original da câmera).
-  function capturar(video, maxLado, qualidade) {
+  function capturarCanvas(video, maxLado) {
     var w = video.videoWidth;
     var h = video.videoHeight;
     if (!w || !h) return null;
@@ -84,6 +84,11 @@
     canvas.width = w;
     canvas.height = h;
     canvas.getContext("2d").drawImage(video, 0, 0, w, h);
+    return canvas;
+  }
+
+  // Converte o canvas em data URL JPEG.
+  function fotoDoCanvas(canvas, qualidade) {
     var foto = canvas.toDataURL("image/jpeg", qualidade);
     // Se passar do limite do servidor, reduz a qualidade.
     while (foto.length > MAX_FOTO_CHARS && qualidade > 0.3) {
@@ -91,6 +96,12 @@
       foto = canvas.toDataURL("image/jpeg", qualidade);
     }
     return foto;
+  }
+
+  // Captura o quadro atual do vídeo como data URL JPEG.
+  function capturar(video, maxLado, qualidade) {
+    var canvas = capturarCanvas(video, maxLado);
+    return canvas ? fotoDoCanvas(canvas, qualidade) : null;
   }
 
   // Envia os campos por POST com um formulário oculto (a página navega para a resposta do doPost).
@@ -116,6 +127,8 @@
     mensagemErroCamera: mensagemErroCamera,
     iniciarCamera: iniciarCamera,
     pararCamera: pararCamera,
+    capturarCanvas: capturarCanvas,
+    fotoDoCanvas: fotoDoCanvas,
     capturar: capturar,
     enviarFormulario: enviarFormulario
   };
