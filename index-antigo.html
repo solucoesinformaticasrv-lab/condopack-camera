@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>CondoPack Camera</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Inter',sans-serif;
+}
+
+body{
+
+background:#EEF3FA;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+height:100vh;
+
+}
+
+.card{
+
+width:95%;
+
+max-width:900px;
+
+background:white;
+
+border-radius:18px;
+
+box-shadow:0 15px 40px rgba(0,0,0,.12);
+
+overflow:hidden;
+
+}
+
+.header{
+
+background:#1E4DB7;
+
+padding:20px;
+
+color:white;
+
+text-align:center;
+
+}
+
+.header h1{
+
+font-size:26px;
+
+font-weight:700;
+
+}
+
+.header p{
+
+margin-top:6px;
+
+opacity:.9;
+
+}
+
+.video-area{
+
+padding:25px;
+
+}
+
+video{
+
+width:100%;
+
+border-radius:14px;
+
+background:black;
+
+aspect-ratio:16/9;
+
+object-fit:cover;
+
+}
+
+.actions{
+
+display:flex;
+
+justify-content:center;
+
+gap:15px;
+
+padding:0 25px 25px;
+
+}
+
+button{
+
+padding:14px 28px;
+
+border:none;
+
+border-radius:10px;
+
+font-size:16px;
+
+font-weight:600;
+
+cursor:pointer;
+
+transition:.25s;
+
+}
+
+.capture{
+
+background:#1E4DB7;
+
+color:white;
+
+}
+
+.capture:hover{
+
+background:#163C92;
+
+}
+
+.cancel{
+
+background:#E5E7EB;
+
+color:#374151;
+
+}
+
+.cancel:hover{
+
+background:#D1D5DB;
+
+}
+
+.status{
+
+padding:15px;
+
+text-align:center;
+
+font-weight:600;
+
+color:#1E4DB7;
+
+display:none;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="header">
+
+<h1>🏢 CondoPack</h1>
+
+</div>
+
+<video id="cameraVideo" autoplay playsinline></video>
+    <button id="btnCapturar" onclick="tirarFoto()">📷 Capturar Foto</button>
+    <div id="status"></div>
+
+<script>
+
+const video = document.getElementById("cameraVideo");
+const status = document.getElementById("status");
+
+const params = new URLSearchParams(window.location.search);
+
+const ticket = params.get("ticket");
+const idEncomenda = params.get("idEncomenda");
+
+// URL de tu WebApp
+const URL_WEBAPP =
+"https://script.google.com/macros/s/AKfycbzX_8RF4Arrnjvc2J-kDUlKPd_UOua9QNrR3UbalvLNZO3Bwh0zmRO3q0Z6mvu1cz34Bw/exec";
+
+// Validación
+if(!ticket || !idEncomenda){
+
+    alert("Parâmetros inválidos.");
+
+    throw new Error("Ticket ou idEncomenda ausente.");
+
+}
+
+//======================================================
+// INICIAR CÂMERA
+//======================================================
+
+async function iniciarCamera(){
+
+    try{
+
+        const stream = await navigator.mediaDevices.getUserMedia({
+
+            video:{
+                facingMode:"environment"
+            },
+
+            audio:false
+
+        });
+
+        video.srcObject = stream;
+
+    }catch(e){
+
+        console.error(e);
+
+        alert("Não foi possível acessar a câmera.");
+
+    }
+
+}
+
+iniciarCamera();
+
+
+//======================================================
+// CAPTURAR FOTO
+//======================================================
+
+async function tirarFoto(){
+
+    const canvas = document.createElement("canvas");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+
+    ctx.drawImage(video,0,0);
+
+    const foto = canvas.toDataURL("image/jpeg",0.8);
+
+    await enviarFoto(foto);
+
+}
+
+
+//======================================================
+// ENVIAR FOTO
+//======================================================
+
+async function enviarFoto(foto){
+
+    status.style.display = "block";
+    status.innerHTML = "Enviando foto...";
+
+    const form = document.createElement("form");
+
+    form.method = "POST";
+
+    form.action = URL_WEBAPP;
+
+    form.target = "_self";
+
+    function addCampo(nome,valor){
+
+        const input = document.createElement("input");
+
+        input.type = "hidden";
+
+        input.name = nome;
+
+        input.value = valor;
+
+        form.appendChild(input);
+
+    }
+
+    addCampo("ticket",ticket);
+
+    addCampo("idEncomenda",idEncomenda);
+
+    addCampo("foto",foto);
+
+    document.body.appendChild(form);
+
+    form.submit();
+
+}
+</script>
+</body>
+</html>
