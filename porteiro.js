@@ -1,4 +1,4 @@
-// Registro de turno: selfie do porteiro com verificação de rosto e envio ao doPost
+// Registro de ponto: selfie do porteiro com verificação de rosto e envio ao doPost
 // (campos: ticket, tipo="PORTEIRO", foto).
 (function () {
   "use strict";
@@ -48,7 +48,7 @@
 
   async function iniciar() {
     if (!ticket) {
-      falhar("Link inválido: faltam informações no endereço da página. Feche esta janela e inicie o turno novamente pelo CondoPack.");
+      falhar("Link inválido. Feche esta janela e bata o ponto de novo pelo CondoPack.");
       return;
     }
     try {
@@ -59,13 +59,13 @@
       falhar(C.mensagemErroCamera(e));
       return;
     }
-    C.mostrarStatus(statusEl, "info", "Preparando a verificação de rosto…", true);
+    C.mostrarStatus(statusEl, "info", "Preparando o reconhecimento do rosto…", true);
     try {
       detector = await carregarDetector();
     } catch (e) {
       console.error(e);
       btnCapturar.disabled = true;
-      C.mostrarStatus(statusEl, "error", "Não foi possível carregar a verificação de rosto. Verifique a conexão com a internet e recarregue a página.");
+      C.mostrarStatus(statusEl, "error", "Não foi possível carregar o reconhecimento do rosto. Verifique a internet e atualize a página.");
       return;
     }
     C.esconderStatus(statusEl);
@@ -76,7 +76,7 @@
     if (verificando || enviando || !detector) return;
     var canvas = C.capturarCanvas(video, MAX_LADO);
     if (!canvas) {
-      C.mostrarStatus(statusEl, "error", "A câmera ainda não está pronta. Aguarde um instante e tente de novo.");
+      C.mostrarStatus(statusEl, "error", "A câmera ainda está carregando. Espere um pouco e tente de novo.");
       return;
     }
     verificando = true;

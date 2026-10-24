@@ -39,15 +39,15 @@
   function mensagemErroCamera(err) {
     var nome = err && err.name;
     if (nome === "NotAllowedError" || nome === "SecurityError") {
-      return "Permissão da câmera negada. Clique no ícone de câmera na barra de endereço, permita o acesso e recarregue a página.";
+      return "A câmera foi bloqueada. Clique no ícone da câmera ao lado do endereço do site, escolha “Permitir” e atualize a página.";
     }
     if (nome === "NotFoundError" || nome === "OverconstrainedError" || nome === "DevicesNotFoundError") {
-      return "Nenhuma câmera foi encontrada. Conecte uma webcam ao computador e recarregue a página.";
+      return "Nenhuma câmera encontrada. Conecte a webcam no computador e atualize a página.";
     }
     if (nome === "NotReadableError" || nome === "TrackStartError") {
-      return "A câmera está sendo usada por outro programa. Feche o outro programa e recarregue a página.";
+      return "A câmera está aberta em outro programa. Feche esse programa e atualize a página.";
     }
-    return "Não foi possível acessar a câmera. Verifique a webcam e recarregue a página.";
+    return "Não foi possível abrir a câmera. Verifique a webcam e atualize a página.";
   }
 
   async function iniciarCamera(video, facingMode) {

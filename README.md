@@ -5,7 +5,7 @@ Páginas de câmera do CondoPack, publicadas com GitHub Pages. A app (Google App
 | Página | Uso | Campos enviados |
 | --- | --- | --- |
 | `index.html?ticket=…&idEncomenda=…` | Foto da entrega | `ticket`, `idEncomenda`, `foto` (JPEG, resolução da câmera, qualidade 0.8) |
-| `porteiro.html?ticket=…&nome=…` | Selfie do porteiro ao iniciar o turno, com verificação de rosto | `ticket`, `tipo=PORTEIRO`, `foto` (JPEG, máx. 600 px, qualidade 0.6) |
+| `porteiro.html?ticket=…&nome=…` | Selfie do porteiro ao bater o ponto, com verificação de rosto | `ticket`, `tipo=PORTEIRO`, `foto` (JPEG, máx. 600 px, qualidade 0.6) |
 | `index-antigo.html` | Versão anterior da foto da entrega (rollback) | `ticket`, `idEncomenda`, `foto` |
 
 Arquivos comuns: `camera.css` (visual) e `camera.js` (câmera, captura, mensagens e envio; contém a URL `/exec` da Web App).

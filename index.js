@@ -26,7 +26,7 @@
 
   async function iniciar() {
     if (!ticket || !idEncomenda) {
-      falhar("Link inválido: faltam informações no endereço da página. Feche esta janela e abra a câmera novamente pelo CondoPack.");
+      falhar("Link inválido. Feche esta janela e abra a câmera de novo pelo CondoPack.");
       return;
     }
     try {
@@ -43,7 +43,7 @@
     if (enviando) return;
     var foto = C.capturar(video, 0, 0.8);
     if (!foto) {
-      C.mostrarStatus(statusEl, "error", "A câmera ainda não está pronta. Aguarde um instante e tente de novo.");
+      C.mostrarStatus(statusEl, "error", "A câmera ainda está carregando. Espere um pouco e tente de novo.");
       return;
     }
     enviando = true;
