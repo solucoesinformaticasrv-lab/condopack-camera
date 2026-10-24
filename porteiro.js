@@ -11,8 +11,6 @@
   var saudacao = document.getElementById("saudacao");
   var statusEl = document.getElementById("status");
   var btnCapturar = document.getElementById("btnCapturar");
-  var btnOutra = document.getElementById("btnOutra");
-  var btnEnviar = document.getElementById("btnEnviar");
 
   var params = new URLSearchParams(window.location.search);
   var ticket = params.get("ticket");
@@ -25,7 +23,6 @@
 
   var stream = null;
   var detector = null;
-  var foto = null;
   var verificando = false;
   var enviando = false;
 
@@ -36,27 +33,6 @@
     placeholderTexto.textContent = "Câmera indisponível";
     btnCapturar.disabled = true;
     C.mostrarStatus(statusEl, "error", texto);
-  }
-
-  function modoCamera() {
-    foto = null;
-    img.hidden = true;
-    img.removeAttribute("src");
-    video.hidden = false;
-    btnCapturar.hidden = false;
-    btnOutra.hidden = true;
-    btnEnviar.hidden = true;
-    C.esconderStatus(statusEl);
-  }
-
-  function modoRevisao() {
-    img.src = foto;
-    img.hidden = false;
-    video.hidden = true;
-    btnCapturar.hidden = true;
-    btnOutra.hidden = false;
-    btnEnviar.hidden = false;
-    C.mostrarStatus(statusEl, "success", "Rosto identificado. Se a foto estiver boa, clique em “Enviar foto”.");
   }
 
   async function carregarDetector() {
@@ -97,7 +73,7 @@
   }
 
   btnCapturar.addEventListener("click", async function () {
-    if (verificando || !detector) return;
+    if (verificando || enviando || !detector) return;
     var canvas = C.capturarCanvas(video, MAX_LADO);
     if (!canvas) {
       C.mostrarStatus(statusEl, "error", "A câmera ainda não está pronta. Aguarde um instante e tente de novo.");
@@ -106,30 +82,25 @@
     verificando = true;
     btnCapturar.disabled = true;
     C.mostrarStatus(statusEl, "info", "Verificando o rosto…", true);
+    var rostos = null;
     try {
-      var rostos = await detector.estimateFaces(canvas);
-      if (!rostos || rostos.length === 0) {
-        C.mostrarStatus(statusEl, "error", MSG_SEM_ROSTO);
-        return;
-      }
-      foto = C.fotoDoCanvas(canvas, QUALIDADE);
-      modoRevisao();
+      rostos = await detector.estimateFaces(canvas);
     } catch (e) {
       console.error(e);
-      C.mostrarStatus(statusEl, "error", MSG_SEM_ROSTO);
-    } finally {
-      verificando = false;
-      btnCapturar.disabled = false;
     }
-  });
-
-  btnOutra.addEventListener("click", modoCamera);
-
-  btnEnviar.addEventListener("click", function () {
-    if (enviando || !foto) return;
+    verificando = false;
+    if (!rostos || rostos.length === 0) {
+      // Sem rosto: deixa tirar a foto de novo
+      C.mostrarStatus(statusEl, "error", MSG_SEM_ROSTO);
+      btnCapturar.disabled = false;
+      return;
+    }
+    // Rosto identificado: envia na hora
     enviando = true;
-    btnOutra.disabled = true;
-    btnEnviar.disabled = true;
+    var foto = C.fotoDoCanvas(canvas, QUALIDADE);
+    img.src = foto;
+    img.hidden = false;
+    video.hidden = true;
     C.mostrarStatus(statusEl, "info", "Enviando foto…", true);
     C.pararCamera(stream);
     C.enviarFormulario({ ticket: ticket, tipo: "PORTEIRO", foto: foto });
